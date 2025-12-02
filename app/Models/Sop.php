@@ -4,11 +4,17 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
 
 
 class Sop extends Model
 {
+    protected static function booted()
+{
+    static::creating(function ($sop) {
+        $sop->status = 'Pending';
+        $sop->user_id = auth()->id();
+    });
+}
     use HasFactory;
 
     public $timestamps = true;

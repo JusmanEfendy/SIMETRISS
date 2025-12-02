@@ -16,6 +16,11 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SopResource extends Resource
 {
+    public static function canViewAny(): bool
+    {
+        return auth()->user()->hasAnyRole('unit', 'humas');
+    }
+
     protected static ?string $model = Sop::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -96,6 +101,33 @@ class SopResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+        ->actions([
+    Tables\Actions\EditAction::make()
+        ->visible(fn () => auth()->user()->hasRole('unit')),
+
+    Tables\Actions\Action::make('review')
+        ->label('Review')
+        ->visible(fn () => auth()->user()->hasRole('humas'))
+        ->form([
+            Forms\Components\Select::make('status')
+                ->options([
+                    'Approved' => 'Approve',
+                    'Rejected' => 'Reject',
+                ])
+                ->required(),
+
+            Forms\Components\Textarea::make('revision')
+                ->label('Catatan Revisi / Komentar'),
+        ])
+        ->action(function ($record, $data) {
+            $record->update([
+                'status' => $data['status'],
+                'revision' => $data['revision'] ?? null,
+            ]);
+        })
+        ->color('warning'),
+])
+
         ->columns([
             Tables\Columns\TextColumn::make('id_sop')
                 ->label('ID SOP')
@@ -168,4 +200,22 @@ class SopResource extends Resource
             'edit' => Pages\EditSop::route('/{record}/edit'),
         ];
     }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+{
+    $user = auth()->user();
+
+    $query = parent::getEloquentQuery();
+
+    if ($user->hasRole('unit')) {
+        return $query->where('user_id', $user->id);
+    }
+
+    if ($user->hasRole('humas')) {
+        return $query->where('status', 'Pending');
+    }
+
+    return $query;
+}
+
 }
