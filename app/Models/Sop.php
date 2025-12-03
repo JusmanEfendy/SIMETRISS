@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Observers\SopObserver;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-
+#[ObservedBy(SopObserver::class)]
 class Sop extends Model
 {
     protected static function booted()
@@ -49,12 +51,12 @@ class Sop extends Model
     }
 
     protected static function boot()
-{
-    parent::boot();
+    {
+        parent::boot();
 
-    static::creating(function ($model) {
-        $model->id_sop = 'SOP' . now()->format('YmdHis');
-    });
-}
+        static::creating(function ($model) {
+            $model->id_sop = 'SOP' . now()->format('YmdHis');
+        });
+    }
 
 }

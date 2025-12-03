@@ -6,6 +6,7 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Models\User;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -15,10 +16,10 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class UserResource extends Resource
 {
-    public static function canViewAny(): bool
-    {
-        return auth()->user()->hasRole('admin');
-    }
+    // public static function canViewAny(): bool
+    // {
+    //     return auth()->user()->hasRole('admin');
+    // }
 
     protected static ?string $model = User::class;
 
@@ -43,7 +44,8 @@ class UserResource extends Resource
                 ->password()
                 ->required(fn ($livewire) => $livewire instanceof Pages\CreateUser)
                 ->dehydrateStateUsing(fn ($state) => bcrypt($state))
-                ->dehydrated(fn ($state) => filled($state)),
+                ->dehydrated(fn ($state) => filled($state))
+                ->visibleOn('create'),
 
             Forms\Components\Select::make('roles')
                 ->label('Role')
@@ -63,9 +65,10 @@ class UserResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('email_verified_at')
-                    ->dateTime()
-                    ->sortable(),
+                Tables\Columns\TextColumn::make('Roles.name'),
+                // Tables\Columns\TextColumn::make('email_verified_at')
+                //     ->dateTime()
+                //     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()
